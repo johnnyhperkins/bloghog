@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Edit Post</h2>
+    <form method="post" id="edit-post">
+      <label>
+        <div>Subject</div>
+        <input type="text" {% if disabled %} disabled="true" {% endif %} name="subject" value="{{post.subject}}">
+      </label>
+      <label>
+        <div>Content</div>
+        <textarea name="content" {% if disabled %} disabled="true" {% endif %}>{{post.content}}</textarea>
+      </label>
+      <div class="error">{{error}}</div>
+      <input type="submit" value="Update" {% if disabled %} disabled="true" {% endif %}>
+      <a href="/blog/{{post.key.id()}}">Cancel</a>
+    </form>
+{% endblock %}

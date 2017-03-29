@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+{% if posts %}
+  {% for post in posts %}
+  <div class="row">
+  	<div class="col-md-12">
+    	<h2><a href="/blog/{{post.key.id()}}">{{post.subject}}</a></h2>
+    </div><!-- /.col-md-12 -->
+  </div><!-- /.row -->
+  <div class="row post-header">
+		<div class="col-md-8">
+      <p>Posted by {% if current_user == post.author_name() %}<a href="/welcome">{{post.author_name()}}</a>{% else %}{{post.author_name()}}{% endif %}, {{post.created.strftime("%b %d, %Y")}}. Last update: {{post.last_modified.strftime("%b %d at %H:%m,  %Y")}} | <i class="fa fa-thumbs-o-up"></i> {{post.likes}}</p>
+    </div><!-- /.col-md-8 -->
+    <div class="post-options col-md-4">
+      {% if current_user == post.author_name() %}
+      <a href="/blog/editpost/{{post.key.id()}}">edit</a> | 
+      <form method="post" action="/blog/deletepost">
+    		<input type="hidden" name="id" value={{post.key.id()}}>
+        <input type="submit" name="delete" value="delete" class="sanitize-btn-style">
+    	</form>
+	  	{% endif %}
+    </div><!-- /.post-options -->
+  </div><!-- /.row -->
+  <div class="row post-content">
+  	<div class="col-md-12">
+    	{{post.render_text() | safe}}
+  	</div><!-- /.col-md-12 -->
+  </div><!-- /.row -->
+  <hr>
+  {% endfor %}
+  {% endif %}
+{% endblock %}

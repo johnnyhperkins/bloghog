@@ -1,0 +1,215 @@
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('/static/fonts/fontawesome-webfont.eot?v=4.7.0');
+    src: url('/static/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'), url('/static/fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'), url('/static/fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'), url('/static/fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'), url('/static/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.fa-thumbs-o-up:before {
+    content: "\f087";
+}
+.fa-thumbs-o-down:before {
+    content: "\f088";
+}
+a:hover {
+    text-decoration: none;
+}
+body {
+    padding: 0 0 50px 0;
+    font-family: Roboto;
+    color: #333;
+}
+.header {
+    background: #333;
+    margin-bottom: 25px;
+    padding: 45px;
+    border-radius: 4px;
+    color: #fff;
+}
+.header a {
+    color: #ccc;
+}
+.header a:hover {
+    color: #fff;
+}
+h1 {
+    margin: 0;
+}
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+}
+.post-write-comment {
+    margin-bottom: 50px;
+}
+.error {
+    color: red;
+}
+[disabled="true"] {
+    color: #ccc;
+    cursor: not-allowed;
+}
+.login td {
+    padding: 10px 10px 10px 0;
+}
+.login h2 {
+    margin-top: 0;
+}
+label {
+    display: block;
+}
+label + label {
+    margin-top: 10px;
+}
+input[type=text],
+input[type=password] {
+    padding: 4px;
+}
+input[type=submit],
+.black-btn {
+    border-radius: 50px;
+    box-shadow: none;
+    border: none;
+    color: #fff;
+    background: #333;
+    padding: 10px 20px;
+    font-size: 15px;
+    cursor: pointer;
+}
+input[type=submit]:hover,
+.black-btn:hover {
+    background: #666;
+}
+input[type=submit].like {
+    color: #333;
+}
+#edit-post input[type=text] {
+    width: 500px;
+    font-size: 20px;
+    padding: 2px 10px;
+}
+.post-options {
+    text-align: right;
+}
+.post-header p {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+.post-options form {
+    display: inline-block;
+}
+.post-options input[type=submit],
+input[type=submit].delete-account {
+    display: inline-block;
+    color: #337ab7;
+}
+.post-options input[type=submit]:hover,
+input[type=submit].delete-account:hover {
+    color: #23527c
+}
+.post-footer form,
+.post-footer p {
+    display: inline-block;
+    font-weight: bold;
+}
+.post-footer form {
+    margin-right: 2px;
+    border-bottom: 1px solid #333;
+}
+.repeater-wrapper .odd-color {
+    padding: 20px;
+}
+.repeater-wrapper .post-content {
+    margin-bottom: 0;
+}
+.post-title {
+    margin-top: 0;
+}
+.odd-color:nth-child(odd) {
+    background: #f8f8f8;
+}
+textarea {
+    width: 100%;
+    height: 150px;
+    font-weight: normal;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+#edit-post textarea {
+    height: 300px;
+}
+.main-title {
+    display: block;
+    color: #222;
+    font-size: 40px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    text-decoration: none;
+}
+.post + .post {
+    margin-top: 15px;
+}
+.post-heading {
+    position: relative;
+    border-bottom: 3px solid #666;
+}
+.post-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+.post-date {
+    margin-top: 10px;
+    color: #999;
+}
+.post-date p {
+    float: right;
+    margin-bottom: 0;
+}
+.post-date span {
+    color: red;
+    display: inline-block;
+    margin-right: 20px;
+}
+.post-content {
+    margin-top: 35px;
+    margin-bottom: 35px;
+}
+/*  Helper classes  */
+
+.text-bold {
+    font-weight: bold;
+}
+.no-margin {
+    margin: 0;
+}
+.sanitize-btn-style {
+    border-radius: 0!important;
+    background: none!important;
+    padding: 0!important;
+}
+/* Media queries */
+
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+    }
+}
+@media (min-width: 992px) {
+    .container {
+        width: 970px;
+    }
+}
+@media (min-width: 1200px) {
+    .container {
+        width: 970px;
+    }
+}
