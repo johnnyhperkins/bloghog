@@ -169,9 +169,7 @@ class PostPage(BlogHandler):
     def get(self, post_id):
         key = ndb.Key('Post', int(post_id), parent=blog_key())
         post = key.get()
-
-        comments_q = ndb.gql("SELECT * FROM Comment WHERE comment_post_key = :1",key)
-        comments = comments_q.fetch(10)
+        
         like_value = "Like"
         like_name = "like"
         current_user = ""
@@ -193,8 +191,7 @@ class PostPage(BlogHandler):
             author = post.author_name(), 
             current_user = current_user, 
             like_value = like_value, 
-            like_name = like_name,
-            comments = comments
+            like_name = like_name
             )
 
 class NewPost(BlogHandler):

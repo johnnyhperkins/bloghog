@@ -50,10 +50,10 @@
   </div><!-- /.col-md-12 -->
 </div><!-- /.row -->
 {% endif %}
-{% if comments %}
+{% if post.comments %}
 <h2>Comments</h2>
 <div class="repeater-wrapper">
-  {% for c in comments %}
+  {% for c in post.comments %}
   <div class="odd-color" data-commentid="{{c.key.id()}}">
     <div class="row post-comments">
       <div class="col-md-6 text-bold">
