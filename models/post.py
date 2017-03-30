@@ -6,14 +6,19 @@ class Post(ndb.Model):
     content = ndb.TextProperty(required = True)
     created = ndb.DateTimeProperty(auto_now_add = True)
     last_modified = ndb.DateTimeProperty(auto_now = True)
-    author = ndb.KeyProperty(kind=User,required = True)
-    likes = ndb.IntegerProperty(default=0)
+    author = ndb.KeyProperty(kind=User, required = True)
+    # likes = ndb.IntegerProperty(default=0)
+    # likes = ndb.KeyProperty(kind=Like)
 
     def render_text(self):
         return self.content.replace('\n', '<br>')
 
     def author_name(self):
         return User._by_id(self.author.id()).name
+
+    @classmethod
+    def subject_by_id(cls,post_id):
+        return self.get_by_id(post_id).name
     
     # @property # this allows you to call this method without using (), so it will look like a variable
     # def likes(self):

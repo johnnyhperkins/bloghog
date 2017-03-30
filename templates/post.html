@@ -13,7 +13,7 @@
     {% if current_user == author %}
     <a href="/blog/editpost/{{post.key.id()}}">edit</a> | 
     <form method="post" action="/blog/deletepost">
-      <input type="hidden" name="id" value="{{post.key.id()}}">
+      <input type="hidden" name="post_id" value="{{post.key.id()}}">
       <input type="submit" name="delete" value="delete" class="sanitize-btn-style">
     </form>
     {% endif %}
@@ -28,11 +28,11 @@
   <div class="col-md-12">
     {% if current_user and current_user != author %}
     <form method="post" action="/blog/likepost">
-      <input type="hidden" name="id" value="{{post.key.id()}}">
+      <input type="hidden" name="post_id" value="{{post.key.id()}}">
       <input type="submit" name="{{like_name}}" value="{{like_value}}" class="like sanitize-btn-style">
     </form>
     {% endif %}
-    <p><i class="fa fa-thumbs-o-up"></i> {{post.likes}}</p>
+    <p><i class="fa fa-thumbs-o-up"></i> {% if likes %} {{likes.like_count}} {% else %}0{% endif %} </p>
     
   </div><!-- /.col-md-12 -->
 </div><!-- /.row -->
@@ -41,7 +41,7 @@
   <div class="col-md-12">
     <h2>Post a comment</h2>
     <form action="/blog/postcomment" method="post" id="comment_form">
-      <input type="hidden" name="id" value="{{post.key.id()}}">
+      <input type="hidden" name="post_id" value="{{post.key.id()}}">
       <input type="hidden" name="update_comment_id" id="update_comment" value="">
       <textarea name="comment_text" id="comment"></textarea>
       <input type="submit" id="comment_submit" value="Post Comment" />
@@ -108,11 +108,17 @@
         cancel_btn.show();
         comment_submit.val('Edit Comment');
         update_comment.val(edit_id);
-        comment_textarea.text(comment_text).val(comment_text); 
+        comment_textarea.text(comment_text).val(comment_text);
+        comment_form.attr({
+          'action': '/blog/updatecomment'
+        });
 
       cancel_btn.click(function(e) {
         e.preventDefault();
         comment_submit.val('Post Comment');
+        comment_form.attr({
+          'action': '/blog/postcomment'
+        });
         comment_textarea.empty().val('');
         $(this).hide();
       })

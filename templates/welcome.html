@@ -8,12 +8,7 @@
       </form>
     </div><!-- /.col-md-6 -->
     <div class="col-md-6 text-right">
-      {% if likes %}
-      <h3>Posts you've liked</h3>
-        {% for like in likes %}
-        <a href="/blog/{{like.key.id()}}">{{like.subject}}</a><br />
-        {% endfor %}
-      {% endif %}
+
     </div><!-- /.col-md-6 -->
   </div><!-- /.row -->
   <hr>
