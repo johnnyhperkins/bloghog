@@ -132,6 +132,13 @@ class DeleteAccount(BlogHandler):
                 delete_key = ndb.Key('Post', int(p.key.id()), parent=blog_key())
                 delete_key.delete()
         
+        #delete all associated comments
+        c_query = Comment.query(Comment.comment_author == self.user.key)
+        if c_query:
+            for c in c_query:
+                delete_key = ndb.Key('Comment', int(c.key.id()), parent=comment_key())
+                delete_key.delete()
+        
         # delete user
         key.delete()
         self.redirect('/login')
@@ -193,23 +200,30 @@ class PostPage(BlogHandler):
 
         likes = Like.get_by_postid(post_id)
 
-        if likes:
-            if self.user.key in likes.liked_by_key:
-                like_value = "Unlike"
-                like_name = "unlike"
+        if self.user:
+            if likes:
+                if self.user.key in likes.liked_by_key:
+                    like_value = "Unlike"
+                    like_name = "unlike"
 
         if not post:
             self.error(404)
             return
-
-        self.render("post.html", 
-            post = post,
-            author = post.author_name(), 
-            current_user = self.user.name,
-            like_value = like_value, 
-            like_name = like_name,
-            likes = likes
-            )
+        if self.user:
+            self.render("post.html", 
+                post = post,
+                author = post.author_name(), 
+                current_user = self.user.name,
+                like_value = like_value, 
+                like_name = like_name,
+                likes = likes
+                )
+        else:
+            self.render("post.html", 
+                post = post,
+                author = post.author_name(),
+                likes = likes
+                )
 
 class NewPost(BlogHandler):
     def get(self):
