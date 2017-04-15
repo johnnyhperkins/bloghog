@@ -11,6 +11,7 @@ class Like(ndb.Model):
 	liked_by_key = ndb.KeyProperty(kind=User, repeated=True) # [ 1,3,4,5, 6]
 
 	@classmethod
+	# gets the like entity by post id 
 	def get_by_postid(cls,post_id):
 		key = ndb.Key('Post', int(post_id), parent=blog_key())
 		l = Like.query(Like.post_key == key).get()
@@ -26,3 +27,4 @@ class Like(ndb.Model):
 			if user_key in l.liked_by_key:
 				likes.append(l.post_key)
 		return likes
+	

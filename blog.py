@@ -118,15 +118,19 @@ def comment_key(name='default'):
 def like_key(name='default'):
     return ndb.Key('likes', name)
 
+def users_key(group = 'default'):
+    return ndb.Key('users', group)
+
 class DeleteAccount(BlogHandler):
     def post(self):
         key = ndb.Key('User', int(self.user.key.id()), parent=users_key())
 
         #delete all associated posts
         p_query = Post.query(Post.author == self.user.key)
-        for p in p_query:
-            delete_key = ndb.Key('Post', int(p.key.id()), parent=blog_key())
-            delete_key.delete()
+        if p_query:
+            for p in p_query:
+                delete_key = ndb.Key('Post', int(p.key.id()), parent=blog_key())
+                delete_key.delete()
         
         # delete user
         key.delete()
@@ -137,18 +141,25 @@ class DeleteAccount(BlogHandler):
 class Welcome(BlogHandler):
     def get(self):
         if self.user:
-            # Display all posts from currently logged in user
+            # Display all posts created by currently logged in user
             p_query = Post.query(Post.author == self.user.key)
             posts = p_query.fetch()
 
             # Display list of posts that the user has liked
             likes = Like.liked_posts(self.user.key)
+            liked_posts = []
+            for l in likes:
+                post_id = int(l.id())
+                key = ndb.Key('Post', post_id, parent=blog_key())
+                post = key.get()
+                liked_posts.append(post)
+
             
             self.render('welcome.html', 
                 username = self.user.name, 
                 current_user = self.user.name, 
-                posts = posts, 
-                likes = likes
+                posts = posts,
+                likes = liked_posts
                 )
         else:
             self.redirect('/signup')
@@ -450,12 +461,3 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/welcome', Welcome),
                                ],
                               debug=True)
-
-
-# for later:
-# {% if likes %}
-#       <h3>Posts you've liked</h3>
-#         {% for like in likes %}
-#         <a href="/blog/{{like.id()}}">{{Post.subject_by_id(like.id())}}</a><br />
-#         {% endfor %}
-#       {% endif %}

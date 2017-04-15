@@ -8,7 +8,14 @@
       </form>
     </div><!-- /.col-md-6 -->
     <div class="col-md-6 text-right">
-
+      {% if likes %}
+      <h3>Posts you've liked</h3>
+      <ul style="list-style:none;">
+      {% for l in likes %}
+      <li><a href="/blog/{{l.key.id()}}">{{l.subject}}</a></li>
+      {% endfor %}
+      </ul>
+      {% endif %}
     </div><!-- /.col-md-6 -->
   </div><!-- /.row -->
   <hr>
@@ -44,5 +51,7 @@
     </div><!-- /.odd-color -->
       {% endfor %}
   </div><!-- /.repeater-wrapper -->
+  {% else %}
+  <h4>You haven't written any posts yet! <a href="/blog/newpost">Write one now.</a></h4>
   {% endif %}
 {% endblock %}
