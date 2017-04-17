@@ -289,8 +289,11 @@ class DeletePost(BlogHandler):
 class LikeHandler(BlogHandler):
     @post_exists
     @user_logged_in    
-    # @user_owns_post
     def post(self,post_id,post):
+        # makes sure the user isn't able to like their own post, logs them out with an error for trying to cheat
+        if self.user.key == post.author:
+            self.logout()
+            return self.redirect('/login?error=fakelike')
         if not Like.get_by_postid(post_id):
             l = Like(parent = like_key(), like_count = 1, post_key=post.key, liked_by_key=[self.user.key])
             l.put()
@@ -316,18 +319,18 @@ def comment_exists(function):
     def wrapper(self):
         post_id = self.request.get('post_id')
         post = Post.get_by_id(int(post_id), parent=blog_key())
-
-        update_comment_id = self.request.get('update_comment_id')
-        comment = Comment.get_by_id(int(update_comment_id), parent=comment_key())
+        comment_id = self.request.get('comment_id')
+        comment = Comment.get_by_id(int(comment_id), parent=comment_key())
         
-        if comment and post and self.user.key.id() == comment.comment_author.id():
+        #check if user is logged in, the comment and post exist, and if author of the comment matches the currently logged in user 
+        if self.user and comment and post and self.user.key.id() == comment.comment_author.id():
             return function(self, post_id, post, comment)
         else:
             return self.redirect('/login?error=notloggedin')
     return wrapper
 
 class UpdateComment(BlogHandler): 
-    @comment_exists
+    @comment_exists # this decorator checks if logged in, and the comment author id against the currently logged in user id
     def post(self,post_id,post,comment):
         comment_text = self.request.get('comment_text')
         comment.comment_text = comment_text
@@ -350,9 +353,8 @@ class NewComment(BlogHandler):
         self.redirect('/blog/%s' % str(post_id))
 
 class DeleteComment(BlogHandler):
-    @post_exists
-    @user_logged_in
-    def post(self, post_id, post):    
+    @comment_exists # this decorator checks if logged in, and the comment author id against the currently logged in user id
+    def post(self, post_id, post, comment):    
         delete_id = self.request.get('comment_id')
         delete_key = ndb.Key('Comment', int(delete_id), parent=comment_key())
         if delete_key:
@@ -364,16 +366,17 @@ class DeleteComment(BlogHandler):
 
 # User registration and login classes
 
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
+    USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
     return username and USER_RE.match(username)
 
-PASS_RE = re.compile(r"^.{3,20}$")
+
 def valid_password(password):
+    PASS_RE = re.compile(r"^.{3,20}$")
     return password and PASS_RE.match(password)
 
-EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 def valid_email(email):
+    EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
     return not email or EMAIL_RE.match(email)
 
 class Signup(BlogHandler):
@@ -432,6 +435,8 @@ class Login(BlogHandler):
         error = self.request.get('error')
         if error == 'notloggedin':
             error="You must be logged in to do that."
+        elif error == 'fakelike':
+            error="You cannot like your own post"
         self.render('login.html', error = error)
 
     def post(self):

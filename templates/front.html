@@ -9,7 +9,7 @@
   </div><!-- /.row -->
   <div class="row post-header">
 		<div class="col-md-8">
-      <p>Posted by {% if current_user == post.author_name() %}<a href="/welcome">{{post.author_name()}}</a>{% else %}{{post.author_name()}}{% endif %}, {{post.created.strftime("%b %d, %Y")}}. Last update: {{post.last_modified.strftime("%b %d at %H:%m,  %Y")}} | <i class="fa fa-thumbs-o-up"></i> {% if post.post_likes %}{% for like in post.post_likes %}{{like.like_count}}{% endfor %}{% else %} 0 {% endif %}
+      <p>Posted by {% if current_user == post.author_name() %}<a href="/welcome">{{post.author_name()}}</a>{% else %}{{post.author_name()}}{% endif %}, {{post.created.strftime("%b %d, %Y")}}. Last update: {{post.last_modified.strftime("%b %d at %H:%m, %Y")}} | <i class="fa fa-thumbs-o-up"></i> {% if post.post_likes %}{% for like in post.post_likes %}{{like.like_count}}{% endfor %}{% else %} 0 {% endif %}
       </p>
     </div><!-- /.col-md-8 -->
     <div class="post-options col-md-4">

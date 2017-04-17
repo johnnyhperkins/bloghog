@@ -42,7 +42,7 @@
     <h2>Post a comment</h2>
     <form action="/blog/postcomment" method="post" id="comment_form">
       <input type="hidden" name="post_id" value="{{post.key.id()}}">
-      <input type="hidden" name="update_comment_id" id="update_comment" value="">
+      <input type="hidden" name="comment_id" id="update_comment" value="">
       <textarea name="comment_text" id="comment"></textarea>
       <input type="submit" id="comment_submit" value="Post Comment" />
       <a href="#" id="cancel" style="display:none;">Cancel</a>
