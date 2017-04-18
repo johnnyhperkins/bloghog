@@ -92,20 +92,45 @@ def post_exists(function):
 def user_owns_post(function):
     @wraps(function)
     def wrapper(self, post_id='', post=''):
-        if not self.user.key == post.author:
-            return self.redirect('/login?error=notloggedin')
-        else:
+        if self.user.key == post.author:
             return function(self, post_id, post)
+        else:
+            self.error(404)
+            return
     return wrapper
 
 def user_logged_in(function):
     @wraps(function)
     def wrapper(self, post_id='', post=''):
-        if not self.user:
-            return self.redirect('/login?error=notloggedin')
-        else:
+        if self.user:
             return function(self, post_id, post)
+        else:
+            return self.redirect('/login?error=notloggedin')
     return wrapper
+
+def comment_exists(function):
+    @wraps(function)
+    def wrapper(self,post_id,post):
+        comment_id = self.request.get('comment_id')
+        comment = Comment.get_by_id(int(comment_id), parent=comment_key())
+        
+        if comment and post:
+            return function(self, post_id, post, comment)
+        else:
+            self.error(404)
+            return
+    return wrapper
+
+def user_owns_comment(function):
+    @wraps(function)
+    def wrapper(self,post_id,post,comment):
+        if self.user.key.id() == comment.comment_author.id():
+            return function(self, post_id, post, comment)
+        else:
+            self.error(404)
+            return
+    return wrapper
+        
 
 # Keys - used to ensure strong consistency
 
@@ -123,24 +148,22 @@ def users_key(group = 'default'):
 
 class DeleteAccount(BlogHandler):
     def post(self):
-        key = ndb.Key('User', int(self.user.key.id()), parent=users_key())
+        user = User.get_by_id(int(self.user.key.id()), parent=users_key())
 
         #delete all associated posts
         p_query = Post.query(Post.author == self.user.key)
         if p_query:
             for p in p_query:
-                delete_key = ndb.Key('Post', int(p.key.id()), parent=blog_key())
-                delete_key.delete()
+                Post.get_by_id(int(p.key.id()), parent=blog_key()).key.delete()
         
         #delete all associated comments
         c_query = Comment.query(Comment.comment_author == self.user.key)
         if c_query:
             for c in c_query:
-                delete_key = ndb.Key('Comment', int(c.key.id()), parent=comment_key())
-                delete_key.delete()
+                Comment.get_by_id(int(c.key.id()), parent=comment_key()).key.delete()
         
         # delete user
-        key.delete()
+        user.key.delete()
         self.redirect('/login')
 
 # User home page
@@ -156,11 +179,7 @@ class Welcome(BlogHandler):
             likes = Like.liked_posts(self.user.key)
             liked_posts = []
             for l in likes:
-                post_id = int(l.id())
-                key = ndb.Key('Post', post_id, parent=blog_key())
-                post = key.get()
-                liked_posts.append(post)
-
+                liked_posts.append(Post.get_by_id(int(l.id()), parent=blog_key()))
             
             self.render('welcome.html', 
                 username = self.user.name, 
@@ -191,24 +210,18 @@ class BlogFront(BlogHandler):
 # Post handlers
 
 class PostPage(BlogHandler):
-    def get(self, post_id):
-        key = ndb.Key('Post', int(post_id), parent=blog_key())
-        post = key.get()
-        
+    @post_exists
+    def get(self, post_id, post):
         like_value = "Like"
         like_name = "like"
 
         likes = Like.get_by_postid(post_id)
+    
+        if likes:
+            if self.user.key in likes.liked_by_key:
+                like_value = "Unlike"
+                like_name = "unlike"
 
-        if self.user:
-            if likes:
-                if self.user.key in likes.liked_by_key:
-                    like_value = "Unlike"
-                    like_name = "unlike"
-
-        if not post:
-            self.error(404)
-            return
         if self.user:
             self.render("post.html", 
                 post = post,
@@ -233,26 +246,23 @@ class NewPost(BlogHandler):
         else:
             # checks if user has logged out in another window but attempts to post in a logged in window
             self.redirect("/login?error=notloggedin")
+    @user_logged_in
+    def post(self,post_id,post):
+        subject = self.request.get('subject')
+        content = self.request.get('content')
+        author = self.user.key
 
-    def post(self):
-        if not self.user:
-            self.redirect('/login?error=notloggedin')
+        if subject and content:
+            p = Post(parent = blog_key(), subject = subject, content = content, author = author)
+            p.put()
+            self.redirect('/blog/%s' % str(p.key.id()))
         else:
-            subject = self.request.get('subject')
-            content = self.request.get('content')
-            author = self.user.key
-
-            if subject and content:
-                p = Post(parent = blog_key(), subject = subject, content = content, author = author)
-                p.put()
-                self.redirect('/blog/%s' % str(p.key.id()))
-            else:
-                error = "subject and content, please!"
-                self.render("newpost.html", 
-                    subject=subject, 
-                    content=content, 
-                    error=error, 
-                    current_user = self.user.name)
+            error = "subject and content, please!"
+            self.render("newpost.html", 
+                subject=subject, 
+                content=content, 
+                error=error, 
+                current_user = self.user.name)
 
 class EditPost(BlogHandler):
     @post_exists
@@ -279,7 +289,7 @@ class EditPost(BlogHandler):
 
 class DeletePost(BlogHandler):
     @post_exists
-    @user_logged_in    
+    @user_logged_in   
     @user_owns_post
     def post(self,post_id,post):
         post.key.delete()
@@ -288,7 +298,7 @@ class DeletePost(BlogHandler):
 
 class LikeHandler(BlogHandler):
     @post_exists
-    @user_logged_in    
+    @user_logged_in 
     def post(self,post_id,post):
         # makes sure the user isn't able to like their own post, logs them out with an error for trying to cheat
         if self.user.key == post.author:
@@ -314,55 +324,43 @@ class LikeHandler(BlogHandler):
 
 # Comment classes
 
-def comment_exists(function):
-    @wraps(function)
-    def wrapper(self):
-        post_id = self.request.get('post_id')
-        post = Post.get_by_id(int(post_id), parent=blog_key())
-        comment_id = self.request.get('comment_id')
-        comment = Comment.get_by_id(int(comment_id), parent=comment_key())
-        
-        #check if user is logged in, the comment and post exist, and if author of the comment matches the currently logged in user 
-        if self.user and comment and post and self.user.key.id() == comment.comment_author.id():
-            return function(self, post_id, post, comment)
+class NewComment(BlogHandler):
+    @post_exists
+    @user_logged_in
+    def post(self,post_id,post):
+        comment_text = self.request.get('comment_text')
+        if comment_text:
+            c = Comment(
+                parent = comment_key(),
+                comment_text = comment_text,
+                comment_author = self.user.key,
+                comment_post_key = post.key
+                )
+            c.put()
+            self.redirect('/blog/%s' % str(post_id))
         else:
-            return self.redirect('/login?error=notloggedin')
-    return wrapper
+            self.error(404)
+            return
 
-class UpdateComment(BlogHandler): 
-    @comment_exists # this decorator checks if logged in, and the comment author id against the currently logged in user id
+class UpdateComment(BlogHandler):
+    @post_exists
+    @user_logged_in
+    @comment_exists
+    @user_owns_comment
     def post(self,post_id,post,comment):
         comment_text = self.request.get('comment_text')
         comment.comment_text = comment_text
         comment.put()
         self.redirect('/blog/%s' % str(post_id))
 
-
-class NewComment(BlogHandler):
+class DeleteComment(BlogHandler):
     @post_exists
     @user_logged_in
-    def post(self,post_id,post):
-        comment_text = self.request.get('comment_text')
-        c = Comment(
-            parent = comment_key(),
-            comment_text = comment_text,
-            comment_author = self.user.key,
-            comment_post_key = post.key
-            )
-        c.put()
-        self.redirect('/blog/%s' % str(post_id))
-
-class DeleteComment(BlogHandler):
-    @comment_exists # this decorator checks if logged in, and the comment author id against the currently logged in user id
+    @comment_exists
+    @user_owns_comment
     def post(self, post_id, post, comment):    
-        delete_id = self.request.get('comment_id')
-        delete_key = ndb.Key('Comment', int(delete_id), parent=comment_key())
-        if delete_key:
-            delete_key.delete()
-            self.redirect('/blog/%s' % str(post_id))
-        else:
-            self.error(404)
-            return
+        comment.key.delete()
+        self.redirect('/blog/%s' % str(post_id))
 
 # User registration and login classes
 
